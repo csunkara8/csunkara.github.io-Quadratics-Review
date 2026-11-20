@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f4fd8">
+<title>Sunkara Math Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+
+/* Layout: a worksheet. Method tabs on top, one graph-paper board holding the equation, then steps that unlock one at a time. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --fg:#14202b; --muted:#566676; --line:#d8dfe6; --grid:#e4eaf1;
+  --accent:#1f4fd8; --accent-ink:#ffffff; --accent-soft:#e7edff;
+  --good:#136c43; --good-soft:#e2f3e9; --bad:#a8281f; --bad-soft:#fbe7e5; --hint:#7a5200; --hint-soft:#fff3d1;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-head:'Space Grotesk','Inter',system-ui,sans-serif;
+  --font-math:'STIX Two Text','Cambria Math',Cambria,Georgia,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1720; --surface:#17212c; --fg:#e8eef4; --muted:#95a6b6; --line:#2b3947; --grid:#1f2c39;
+    --accent:#7ba2ff; --accent-ink:#0b1220; --accent-soft:#1d2a47;
+    --good:#62d69d; --good-soft:#12321f; --bad:#ff8f87; --bad-soft:#3a1816; --hint:#f1c565; --hint-soft:#33290f;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1720; --surface:#17212c; --fg:#e8eef4; --muted:#95a6b6; --line:#2b3947; --grid:#1f2c39;
+  --accent:#7ba2ff; --accent-ink:#0b1220; --accent-soft:#1d2a47;
+  --good:#62d69d; --good-soft:#12321f; --bad:#ff8f87; --bad-soft:#3a1816; --hint:#f1c565; --hint-soft:#33290f;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:28px 8px}
+.kicker{margin:0 0 6px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{margin:0;font-family:var(--font-head);font-size:clamp(1.7rem,5vw,2.3rem);line-height:1.1;letter-spacing:-.01em;text-wrap:balance}
+.lede{margin:10px 0 0;color:var(--muted);max-width:60ch}
+main{padding-block:16px 40px;display:flex;flex-direction:column;gap:16px}
+
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{flex:1 1 200px;min-width:0;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 14px;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px}
+.tab b{font-family:var(--font-head);font-weight:600;font-size:15px}
+.tab .cap{font-family:var(--font-math);font-size:15px;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab[aria-selected="true"] .cap{color:var(--accent-ink);opacity:.9}
+.tab:hover:not([aria-selected="true"]){border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.levels{display:flex;flex-wrap:wrap;gap:6px}
+.lv{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:999px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.lv[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.stats{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lvdesc{margin:-6px 0 0;font-size:13px;color:var(--muted)}
+.board{border:1px solid var(--line);border-radius:8px;padding:18px 16px;
+  background-color:var(--surface);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px}
+.board .ask{margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.eq{font-family:var(--font-math);font-size:clamp(1.55rem,5.4vw,2.2rem);line-height:1.35}
+.v{font-family:var(--font-math);font-style:italic}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .12em;font-size:.92em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.fr>span+span{padding:0 .2em}
+.rad{white-space:nowrap}.rd{border-top:1.5px solid currentColor;padding:0 .08em}
+.m{font-family:var(--font-math);font-size:1.08em}
+
+ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.step{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
+.step.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.step.done{background:transparent}
+.s-head{display:flex;gap:10px;align-items:center}
+.badge{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;background:var(--accent-soft);color:var(--accent);font-variant-numeric:tabular-nums}
+.step.done .badge{background:var(--good-soft);color:var(--good)}
+.s-head h3{margin:0;font-family:var(--font-head);font-size:16px;font-weight:600;min-width:0}
+.s-prompt{margin:0;color:var(--fg)}
+.fields{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.fld{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-math);font-size:1.15rem;flex-wrap:nowrap}
+.fld.wide{flex:1 1 100%}
+.in{width:5.4em;min-width:0;font:inherit;font-family:var(--font-body);font-size:16px;text-align:center;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.fld.wide .in{width:100%;max-width:24em;text-align:left}
+.in:read-only{background:transparent;border-color:transparent;font-weight:600}
+.step.done .in{color:var(--good)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+button.btn{font:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--fg)}
+button.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.btn:hover{border-color:var(--accent)}
+.msg{font-size:14px;border-radius:8px;padding:8px 12px}
+.msg[hidden]{display:none}
+.msg.bad{background:var(--bad-soft);color:var(--bad)}
+.msg.hint{background:var(--hint-soft);color:var(--hint)}
+.explain{font-size:14.5px;background:var(--good-soft);color:var(--good);border-radius:8px;padding:9px 12px}
+.explain .m{color:inherit}
+.final{border:1px solid var(--good);background:var(--good-soft);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.final h3{margin:0;font-family:var(--font-head);color:var(--good);font-size:18px}
+.final .ans{font-family:var(--font-math);font-size:1.4rem}
+.final p{margin:0}
+footer{padding-block:0 28px;color:var(--muted);font-size:13px}
+sup{font-size:.7em;line-height:0}
+@media (max-width:480px){.in{width:4.2em;padding:7px 4px}.fields{gap:10px 12px}.fld{gap:4px;font-size:1.05rem}}
+@media (prefers-reduced-motion:no-preference){.step{transition:border-color .15s,box-shadow .15s}}
+
+
+/* ---- site shell ---- */
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+.app{display:block}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+.logo{font-family:var(--font-head);font-weight:700;letter-spacing:.05em;color:var(--fg);text-decoration:none;font-size:15px;white-space:nowrap}
+.logo i{font-style:normal;color:var(--accent);margin-right:6px}
+.logo span{color:var(--muted);font-weight:500}
+.tagline{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;min-width:0}
+.menu{margin-left:auto}
+.side{display:none;background:var(--surface);border-bottom:1px solid var(--line);padding:6px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
+.side.open{display:block}
+.side h2{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;font-weight:600}
+.side a{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--fg);text-decoration:none;font-size:15px}
+.side a:hover{background:var(--accent-soft)}
+.side a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.side a[aria-current="page"] .count{color:var(--accent-ink)}
+.sidefoot{margin-top:18px;font-size:12px;color:var(--muted);padding:0 10px}
+main#main{padding:20px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));max-width:880px;display:flex;flex-direction:column;gap:16px;min-width:0}
+main#main:focus{outline:none}
+@media (min-width:860px){
+  .app{display:grid;grid-template-columns:260px minmax(0,1fr);grid-template-rows:auto 1fr}
+  .topbar{grid-column:1/-1}
+  .menu{display:none}
+  .side{display:block;border-bottom:0;border-right:1px solid var(--line);position:sticky;top:calc(53px + env(safe-area-inset-top,0px));height:calc(100vh - 53px);overflow:auto;padding:6px 14px 20px}
+  main#main{padding:28px 32px 48px}
+}
+.ver{margin:0;font-size:13px;color:var(--muted)}
+h2.sec{font-family:var(--font-head);font-size:18px;margin:6px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--font-math);font-size:1.05rem;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile b{font-family:var(--font-head);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile span{font-size:13px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.mcard{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.mcard h3{margin:0;font-family:var(--font-head);font-size:17px}
+.mcard p{margin:0;color:var(--muted);font-size:14.5px;flex:1}
+.mcard .m{color:var(--fg)}
+a.btn{font:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--fg);text-decoration:none;display:inline-block;text-align:center}
+a.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+a.btn:hover{border-color:var(--accent)}
+@media (max-width:520px){.tagline{display:none}}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}
+.row .eq{font-size:1.4rem}
+.row small{display:block;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:18px;color:var(--muted)}
+.sheet{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.sheet .mcard p{color:var(--fg)}
+.sheet ol,.sheet ul{margin:0;padding-left:1.2em;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+table.dt{border-collapse:collapse;width:100%;font-size:14.5px}
+table.dt th,table.dt td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left}
+.scroll{overflow-x:auto}
+.score{font-family:var(--font-head);font-size:34px;margin:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <a class="logo" href="#overview"><i>&Sigma;</i>SUNKARA<span>/MATH</span></a>
+    <span class="tagline">Quadratics review</span>
+    <button type="button" class="btn menu" id="menu" aria-expanded="false" aria-controls="side">Menu</button>
+  </header>
+  <nav class="side" id="side" aria-label="Sections"></nav>
+  <main id="main" tabindex="-1"></main>
+</div>
+
+<script>
+/* CORE-START */
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
+const F=(n,d=1)=>{if(d<0){n=-n;d=-d}const g=gcd(n,d)||1;return{n:n/g,d:d/g}};
+const I=n=>F(n,1);
+const add=(x,y)=>F(x.n*y.d+y.n*x.d,x.d*y.d);
+const sub=(x,y)=>F(x.n*y.d-y.n*x.d,x.d*y.d);
+const mul=(x,y)=>F(x.n*y.n,x.d*y.d);
+const div=(x,y)=>F(x.n*y.d,x.d*y.n);
+const eq=(x,y)=>x.n===y.n&&x.d===y.d;
+const neg=x=>F(-x.n,x.d);
+const absF=x=>F(Math.abs(x.n),x.d);
+const fstr=x=>x.d===1?String(x.n):x.n+'/'+x.d;
+const isInt=x=>x&&x.d===1;
+
+function parseNum(s){
+  if(s==null)return null;
+  s=String(s).trim().replace(/[−–—]/g,'-').replace(/\s+/g,'').replace(/[()]/g,'');
+  if(!s)return null;
+  const parts=s.split('/');
+  if(parts.length>2)return null;
+  const conv=t=>{
+    const m=t.match(/^([+-]?)(\d+)(?:\.(\d+))?$/);
+    if(!m)return null;
+    const k=m[3]?m[3].length:0;
+    if(k>6)return null;
+    const n=Number(m[2]+(m[3]||''))*(m[1]==='-'?-1:1);
+    return F(n,Math.pow(10,k));
+  };
+  const a=conv(parts[0]);
+  if(!a)return null;
+  if(parts.length===1)return a;
+  const b=conv(parts[1]);
+  if(!b||b.n===0)return null;
+  return div(a,b);
+}
+
+const rnd=Math.random;
+const ri=(lo,hi)=>lo+Math.floor(rnd()*(hi-lo+1));
+const pick=a=>a[Math.floor(rnd()*a.length)];
+const nz=(lo,hi)=>{let v=0;while(v===0)v=ri(lo,hi);return v};
+const isSquare=n=>n>=0&&Math.pow(Math.round(Math.sqrt(n)),2)===n;
+function simp(n){let p=1,q=n;for(let f=2;f*f<=q;f++){while(q%(f*f)===0){q/=f*f;p*=f}}return{p,q}}
+function isSqFree(q){if(q<1)return false;for(let f=2;f*f<=q;f++)if(q%(f*f)===0)return false;return true}
+
+/* display helpers */
+const X='<i class="v">x</i>';
+const intH=n=>n<0?'−'+(-n):String(n);
+const paren=n=>n<0?'(−'+(-n)+')':String(n);
+const sgn=n=>n<0?'− '+(-n):'+ '+n;
+function fh(x){
+  if(typeof x==='number')x=I(x);
+  const sign=x.n<0?'−':'';
+  const n=Math.abs(x.n);
+  return x.d===1?sign+n:sign+'<span class="fr"><span>'+n+'</span><span>'+x.d+'</span></span>';
+}
+function coefH(x,pow,first){
+  const isNeg=x.n<0,ax=absF(x);
+  const one=ax.n===1&&ax.d===1;
+  const num=ax.d===1?String(ax.n):'<span class="fr"><span>'+ax.n+'</span><span>'+ax.d+'</span></span>';
+  const body=pow===0?num:(one?'':num)+X+(pow===2?'<sup>2</sup>':'');
+  return first?(isNeg?'−':'')+body:' '+(isNeg?'−':'+')+' '+body;
+}
+function polyH(a,b,c){
+  const co=[a,b,c].map(v=>typeof v==='number'?I(v):v);
+  let out='',first=true;
+  [2,1,0].forEach((pow,i)=>{const x=co[i];if(x.n===0)return;out+=coefH(x,pow,first);first=false});
+  return out||'0';
+}
+const linH=(p,q)=>(p===1?'':p)+X+' '+(q<0?'−':'+')+' '+Math.abs(q);
+const linT=(p,q)=>(p===1?'':p)+'x '+(q<0?'-':'+')+' '+Math.abs(q);
+const xPlusH=h=>h.n===0?X:X+' '+(h.n<0?'−':'+')+' '+fh(absF(h));
+function radH(p,q,imag){
+  const rad=q>1?'<span class="rad">√<span class="rd">'+q+'</span></span>':'';
+  const i=imag?'<i class="v">i</i>':'';
+  if(!rad&&!i)return String(p);
+  return (p===1?'':String(p))+i+rad;
+}
+function exprH(u,v,w,q,imag){
+  const r=radH(v,q,imag);
+  const top=(u===0?'':intH(u)+' ')+'± '+r;
+  return w===1?top:'<span class="fr"><span>'+top+'</span><span>'+w+'</span></span>';
+}
+
+/* solution info for ax^2+bx+c=0 (a>0) */
+function solInfo(a,b,c){
+  const D=b*b-4*a*c;
+  if(D===0)return{D,type:'double',p:0,q:1};
+  const s=simp(Math.abs(D));
+  const type=D>0?(s.q===1?'rational':'irrational'):'complex';
+  return{D,type,p:s.p,q:s.q};
+}
+function summaryH(S,a,b){
+  const d2=2*a;
+  if(S.type==='rational'||S.type==='double'){
+    const r1=F(-b+S.p,d2),r2=F(-b-S.p,d2);
+    return eq(r1,r2)?'x = '+fh(r1):'x = '+fh(r1)+' &nbsp;or&nbsp; x = '+fh(r2);
+  }
+  const g=gcd(gcd(Math.abs(b),S.p),d2);
+  return 'x = '+exprH(-b/g,S.p/g,d2/g,S.q,S.type==='complex');
+}
+
+/* generators */
+function genFactoring(level,opts={}){
+  for(;;){
+    let p=1,r=1,k=1;
+    if(level===2){r=pick([2,3]);if(rnd()<.5)[p,r]=[r,p]}
+    if(level===3){
+      if(rnd()<.5){k=ri(2,5);if(rnd()<.5)r=pick([2,3])}
+      else{p=pick([2,3]);r=pick([2,3,4])}
+    }
+    const q=nz(-9,9);let s=nz(-9,9);
+    if(level===1&&!opts.noDouble&&rnd()<.12)s=q;
+    if(opts.noDouble&&eq(F(-q,p),F(-s,r)))continue;
+    if(gcd(p,q)!==1||gcd(r,s)!==1)continue;
+    const a=k*p*r,b=k*(p*s+q*r),c=k*q*s;
+    if(Math.max(Math.abs(a),Math.abs(b),Math.abs(c))>70)continue;
+    return{a,b,c,k,f:{p,q,r,s}};
+  }
+}
+function genRand(aSet,pComplex,bmax,cmax){
+  for(;;){
+    const a=pick(aSet),b=ri(-bmax,bmax),c=nz(-cmax,cmax);
+    if(b===0&&rnd()<.7)continue;
+    const D=b*b-4*a*c;
+    if(D===0||Math.abs(D)>220)continue;
+    const complex=D<0;
+    if(complex!==(rnd()<pComplex))continue;
+    if(!complex&&isSquare(D))continue;
+    if(gcd(gcd(a,b),c)!==1)continue;
+    return{a,b,c};
+  }
+}
+function genRootsA1(parity){ // parity: 'same' | 'diff'
+  for(;;){
+    const r1=nz(-9,9),r2=nz(-9,9);
+    if(r1===r2)continue;
+    const same=((r1-r2)%2===0);
+    if((parity==='same')!==same)continue;
+    return{a:1,b:-(r1+r2),c:r1*r2};
+  }
+}
+function genFormulaProblem(level){
+  if(level===1){const g=genFactoring(1,{noDouble:true});return{a:g.a,b:g.b,c:g.c,rearr:false}}
+  if(level===2){const g=genFactoring(2);return{a:g.a,b:g.b,c:g.c,rearr:rnd()<.5}}
+  const g=genRand([1,2,3,4],.3,9,9);return{...g,rearr:rnd()<.6};
+}
+function genSquareProblem(level){
+  if(level===1)return genRootsA1('same');
+  if(level===2)return rnd()<.5?genRootsA1('diff'):genRand([1],0,10,9);
+  if(rnd()<.3){const g=genFactoring(2);return{a:g.a,b:g.b,c:g.c}}
+  return genRand([2,3,4],.25,9,9);
+}
+function genFactoringProblem(level){return genFactoring(level)}
+
+/* factored-form parser */
+function polyMul(A,B){
+  const out=Array(A.length+B.length-1).fill(0).map(()=>I(0));
+  A.forEach((x,i)=>B.forEach((y,j)=>{out[i+j]=add(out[i+j],mul(x,y))}));
+  return out;
+}
+function parseLinear(s){
+  if(!s)return null;
+  const terms=s.match(/[+-]?[^+-]+/g);
+  if(!terms||terms.join('')!==s)return null;
+  let c0=I(0),c1=I(0);
+  for(const t of terms){
+    const m=t.match(/^([+-]?)(\d+(?:\.\d+)?(?:\/\d+)?)?(x)?$/);
+    if(!m||(!m[2]&&!m[3]))return null;
+    let co=m[2]?parseNum(m[2]):I(1);
+    if(!co)return null;
+    if(m[1]==='-')co=neg(co);
+    if(m[3])c1=add(c1,co);else c0=add(c0,co);
+  }
+  return[c0,c1];
+}
+function parseFactored(str){
+  let s=String(str).toLowerCase().replace(/[−–—]/g,'-').replace(/[\s·×*]/g,'').replace(/²/g,'^2');
+  if(!s)return null;
+  const lm=s.match(/^([+-]?)(\d+(?:\.\d+)?(?:\/\d+)?)?/);
+  let lead=I(1);
+  if(lm[2]){lead=parseNum(lm[2]);if(!lead)return null}
+  if(lm[1]==='-')lead=neg(lead);
+  s=s.slice(lm[0].length);
+  let poly=[lead],count=0;
+  while(s){
+    const gm=s.match(/^\(([^()]*)\)(\^2)?/);
+    if(!gm)return null;
+    const lin=parseLinear(gm[1]);
+    if(!lin)return null;
+    poly=polyMul(poly,lin);
+    count++;
+    if(gm[2]){poly=polyMul(poly,lin);count++}
+    s=s.slice(gm[0].length);
+  }
+  if(count===0)return{none:true};
+  return{poly,count};
+}
+function polyEq(poly,a,b,c){
+  const t=[I(c),I(b),I(a)];
+  for(let i=0;i<Math.max(poly.length,3);i++){
+    const x=poly[i]||I(0),y=t[i]||I(0);
+    if(!eq(x,y))return false;
+  }
+  return true;
+}
+
+/* step helpers */
+const BAD_FMT={ok:false,msg:'Enter each answer as a whole number or a fraction, like −3 or 5/2.'};
+const fld=(pre,post,aria,extra)=>({pre:pre||'',post:post||'',aria:aria||'answer',...(extra||{})});
+function exact(expected){
+  return v=>{
+    if(v.some(x=>!x))return BAD_FMT;
+    return{ok:v.every((x,i)=>eq(x,expected[i]))};
+  };
+}
+function pairCheck(r1,r2){
+  return v=>{
+    if(v.some(x=>!x))return BAD_FMT;
+    const ok=(eq(v[0],r1)&&eq(v[1],r2))||(eq(v[0],r2)&&eq(v[1],r1));
+    if(!ok&&eq(v[0],v[1])&&!eq(r1,r2))return{ok:false,msg:'You entered the same value twice. The + and the − give two different solutions.'};
+    return{ok};
+  };
+}
+function radRow(imag){
+  return[
+    fld('±&nbsp;(',imag?' <i class="v">i</i>√':' √','v, the number in front of the radical'),
+    fld('',') /','q, the number inside the radical'),
+    fld('','','w, the denominator')
+  ];
+}
+/* v, q, w with (v/w)^2 * q = Rabs, q squarefree, w>0 */
+function radFracCheck(Rabs){
+  return vals=>{
+    const [v,q,w]=vals;
+    if(!v||!q||!w||!isInt(v)||!isInt(q)||!isInt(w))return{ok:false,msg:'Enter whole numbers for v, q and w.'};
+    if(w.n<=0||q.n<=0)return{ok:false,msg:'q and w must be positive whole numbers.'};
+    const val=mul(mul(div(v,w),div(v,w)),q);
+    if(!eq(val,Rabs))return{ok:false};
+    if(v.n<0)return{ok:false,msg:'The ± is already written, so enter v as a positive number.'};
+    if(!isSqFree(q.n))return{ok:false,msg:'Right value, but simplify the radical. Pull every perfect square out of the √.'};
+    return{ok:true};
+  };
+}
+function finalStep(S,a,b,prompt){
+  const {p,q,type}=S,d2=2*a;
+  const summary=summaryH(S,a,b);
+  if(type==='rational'||type==='double'){
+    const r1=F(-b+p,d2),r2=F(-b-p,d2);
+    return{
+      title:'Simplify to get the solutions',
+      prompt,
+      fields:[fld('<i class="v">x</i><sub>1</sub> =','','x one'),fld('<i class="v">x</i><sub>2</sub> =','','x two')],
+      check:pairCheck(r1,r2),
+      answer:[fstr(r1),fstr(r2)],
+      hint:'Work out the + and the − separately, then reduce each fraction. Fractions such as 3/2 are fine.',
+      explain:summary+(type==='double'?' (one repeated solution)':'')
+    };
+  }
+  const g=gcd(gcd(Math.abs(b),p),d2);
+  const u=-b/g,v=p/g,w=d2/g,imag=type==='complex';
+  const target={u:F(-b,d2),v:F(p,d2)};
+  return{
+    title:'Simplify to get the solutions',
+    prompt,
+    fields:[
+      fld('<i class="v">x</i> = (','±','u, the number before the plus or minus'),
+      fld('',(imag?' <i class="v">i</i>':'')+(q>1?' √'+q:'')+' ) /','v, the number in front of the radical'),
+      fld('','','w, the denominator')
+    ],
+    check:vals=>{
+      const [U,V,W]=vals;
+      if(vals.some(z=>!z)||!isInt(U)||!isInt(V)||!isInt(W))return{ok:false,msg:'Enter whole numbers for u, v and w.'};
+      if(W.n<=0)return{ok:false,msg:'w must be a positive whole number.'};
+      const okU=eq(div(U,W),target.u),okV=eq(absF(div(V,W)),target.v);
+      if(!okU||!okV)return{ok:false};
+      if(V.n<0)return{ok:false,msg:'The ± is already written, so enter v as a positive number.'};
+      if(gcd(gcd(Math.abs(U.n),V.n),W.n)!==1)return{ok:false,msg:'Correct value, but reduce it. Divide u, v and w by their common factor.'};
+      return{ok:true};
+    },
+    answer:[String(u),String(v),String(w)],
+    hint:'Check whether the number outside the radical, the number in front of it and the denominator share a common factor. If they do, divide all three by it. Keep the denominator positive.',
+    explain:summary
+  };
+}
+
+/* ---------- Factoring ---------- */
+function buildFactoring(P){
+  const {a,b,c,k}=P,{p,q,r,s}=P.f;
+  const a1=p*r,b1=p*s+q*r,c1=q*s,ac=a1*c1;
+  let mm=0,nn=0;
+  for(let m=-200;m<=200;m++){if(m===0)continue;const n=b1-m;if(m*n===ac){mm=m;nn=n;break}}
+  const r1=F(-q,p),r2=F(-s,r);
+  const steps=[];
+  if(k>1){
+    steps.push({
+      title:'Factor out the greatest common factor',
+      prompt:'The three coefficients of '+polyH(a,b,c)+' share a common factor. Find the greatest common factor (GCF).',
+      fields:[fld('GCF =','','greatest common factor')],
+      check:exact([I(k)]),answer:[String(k)],
+      hint:'List the factors of the smallest coefficient and see which is the largest one that divides all three coefficients.',
+      explain:'Pull out '+k+': '+polyH(a,b,c)+' = '+k+'('+polyH(a1,b1,c1)+'). The '+k+' never makes the expression zero, so we keep factoring '+polyH(a1,b1,c1)+'.'
+    });
+  }
+  steps.push({
+    title:'Multiply a and c',
+    prompt:'For '+polyH(a1,b1,c1)+', we have a = '+a1+' and c = '+intH(c1)+'. Find a·c.',
+    fields:[fld('a·c =','','a times c')],
+    check:exact([I(ac)]),answer:[String(ac)],
+    hint:'Multiply the coefficient of '+X+'<sup>2</sup> by the constant term. Watch the sign of c.',
+    explain:'a·c = '+a1+' × '+paren(c1)+' = '+intH(ac)+'.'
+  });
+  steps.push({
+    title:'Find two numbers that multiply to '+intH(ac)+' and add to '+intH(b1),
+    prompt:'Find two whole numbers m and n with m·n = '+intH(ac)+' and m + n = '+intH(b1)+'. Enter them in either order.',
+    fields:[fld('m =','','m'),fld('n =','','n')],
+    check:v=>{
+      if(v.some(x=>!x))return BAD_FMT;
+      const prodOK=eq(mul(v[0],v[1]),I(ac)),sumOK=eq(add(v[0],v[1]),I(b1));
+      if(prodOK&&sumOK)return{ok:true};
+      if(prodOK)return{ok:false,msg:'These multiply to '+intH(ac)+' but they do not add to '+intH(b1)+'.'};
+      if(sumOK)return{ok:false,msg:'These add to '+intH(b1)+' but they do not multiply to '+intH(ac)+'.'};
+      return{ok:false};
+    },
+    answer:[String(mm),String(nn)],
+    hint:'List the factor pairs of '+intH(ac)+'. '+(ac>0?'The product is positive, so both numbers have the same sign.':'The product is negative, so one number is positive and one is negative.')+' Then pick the pair that adds to '+intH(b1)+'.',
+    explain:intH(mm)+' × '+paren(nn)+' = '+intH(ac)+' and '+intH(mm)+' + '+paren(nn)+' = '+intH(b1)+'.'
+  });
+  steps.push({
+    title:'Write the factored form',
+    prompt:'Use those numbers to factor '+polyH(a1,b1,c1)+'. Type a product of two binomials, like (x + 2)(x − 5).',
+    raw:true,
+    fields:[fld(polyH(a1,b1,c1)+' =','','factored form',{wide:true,ph:'(x + 2)(x - 5)'})],
+    check:vals=>{
+      const res=parseFactored(vals[0]);
+      if(!res||res.none)return{ok:false,msg:'Write it as a product of parentheses, like (x + 2)(x − 5). You can type a minus sign as a hyphen.'};
+      if(polyEq(res.poly,a1,b1,c1)||polyEq(res.poly,a,b,c))return{ok:true};
+      if(res.count!==2)return{ok:false,msg:'You need exactly two binomial factors.'};
+      return{ok:false,msg:'Multiply your factors out. They should give '+polyH(a1,b1,c1)+'.'};
+    },
+    answer:['('+linT(p,q)+')('+linT(r,s)+')'],
+    hint:a1===1
+      ?'Because a = 1, the factors are (x + m)(x + n), using the two numbers you just found. Keep their signs.'
+      :'Split the middle term: '+polyH(a1,0,0)+' '+sgn(mm)+'x '+sgn(nn)+'x '+sgn(c1)+'. Then factor by grouping. Each pair leaves the same binomial.',
+    explain:(k>1?polyH(a,b,c)+' = '+k+'('+linH(p,q)+')('+linH(r,s)+')':polyH(a1,b1,c1)+' = ('+linH(p,q)+')('+linH(r,s)+')')
+  });
+  steps.push({
+    title:'Set each factor equal to zero',
+    prompt:'If ('+linH(p,q)+')('+linH(r,s)+') = 0, then at least one factor is 0. Solve each factor for '+X+'. Enter the solutions in either order.',
+    fields:[fld('<i class="v">x</i><sub>1</sub> =','','x one'),fld('<i class="v">x</i><sub>2</sub> =','','x two')],
+    check:pairCheck(r1,r2),
+    answer:[fstr(r1),fstr(r2)],
+    hint:'For each factor, subtract the constant from both sides, then divide by the coefficient of '+X+'. Fractions such as 3/2 are fine.',
+    explain:linH(p,q)+' = 0 gives '+X+' = '+fh(r1)+'. &nbsp;'+linH(r,s)+' = 0 gives '+X+' = '+fh(r2)+'.'
+  });
+  const summary=eq(r1,r2)?'x = '+fh(r1)+' (a repeated solution)':'x = '+fh(r1)+' &nbsp;or&nbsp; x = '+fh(r2);
+  return{steps,summary};
+}
+
+/* ---------- Quadratic formula ---------- */
+function buildFormula(P){
+  const {a,b,c,rearr}=P,S=solInfo(a,b,c),{D,p,q}=S,imag=S.type==='complex';
+  const steps=[];
+  steps.push({
+    title:rearr?'Set the equation to 0, then read a, b and c':'Identify a, b and c',
+    prompt:rearr
+      ?'Move every term to the left side so the equation equals 0. Then enter a, b and c from <span class="m">'+'<i class="v">ax</i><sup>2</sup> + <i class="v">bx</i> + <i class="v">c</i> = 0</span>.'
+      :'Read the coefficients from <span class="m">'+'<i class="v">ax</i><sup>2</sup> + <i class="v">bx</i> + <i class="v">c</i> = 0</span>. Keep the sign in front of each number.',
+    fields:[fld('a =','','a'),fld('b =','','b'),fld('c =','','c')],
+    check:exact([I(a),I(b),I(c)]),answer:[String(a),String(b),String(c)],
+    hint:'a goes with '+X+'<sup>2</sup>, b goes with '+X+', and c is the number with no '+X+'.'+(rearr?' To set the equation to 0, subtract the right side from both sides. That changes the sign of the number you move.':''),
+    explain:polyH(a,b,c)+' = 0, so a = '+a+', b = '+intH(b)+', c = '+intH(c)+'.'
+  });
+  steps.push({
+    title:'Find the discriminant',
+    prompt:'Compute <span class="m"><i class="v">D</i> = <i class="v">b</i><sup>2</sup> − 4<i class="v">ac</i></span> with a = '+a+', b = '+intH(b)+' and c = '+intH(c)+'.',
+    fields:[fld('<i class="v">D</i> =','','discriminant')],
+    check:exact([I(D)]),answer:[String(D)],
+    hint:'Square b first. A negative number squared is positive. Then subtract 4·a·c, paying attention to the sign of c.',
+    explain:'D = '+paren(b)+'<sup>2</sup> − 4('+a+')('+paren(c)+') = '+intH(D)+'. '+(D>0?'D is positive, so there are two real solutions.':D<0?'D is negative, so there are no real solutions. The solutions are complex and contain <i class="v">i</i>.':'D is 0, so there is one repeated solution.')
+  });
+  steps.push({
+    title:'Fill in −b and 2a',
+    prompt:'The formula is <span class="m"><i class="v">x</i> = <span class="fr"><span>−<i class="v">b</i> ± √<i class="v">D</i></span><span>2<i class="v">a</i></span></span></span>. With b = '+intH(b)+' and a = '+a+', what are −b and 2a?',
+    fields:[fld('−b =','','negative b'),fld('2a =','','two a')],
+    check:exact([I(-b),I(2*a)]),answer:[String(-b),String(2*a)],
+    hint:'−b means the opposite of b. If b is negative, −b is positive.',
+    explain:X+' = <span class="fr"><span>'+intH(-b)+' ± √'+(D<0?'('+intH(D)+')':D)+'</span><span>'+2*a+'</span></span>'
+  });
+  steps.push({
+    title:D<0?'Simplify the square root of the negative discriminant':'Simplify the square root',
+    prompt:D===0
+      ?'D is 0, so √0 = 0. Enter p = 0 and q = 1.'
+      :(D<0
+        ?'D is negative, so √'+intH(D)+' = <i class="v">i</i>√'+(-D)+'. Write √'+(-D)+' in simplest radical form <span class="m"><i class="v">p</i>√<i class="v">q</i></span>.'
+        :'Write √'+D+' in simplest radical form <span class="m"><i class="v">p</i>√<i class="v">q</i></span>.')+' If it is a perfect square, use q = 1.',
+    fields:[fld('p =','','p, outside the radical'),fld('q =','','q, inside the radical')],
+    check:v=>{
+      if(v.some(x=>!x))return BAD_FMT;
+      if(D===0)return{ok:eq(v[0],I(0))};
+      if(!isInt(v[0])||!isInt(v[1]))return{ok:false,msg:'Enter whole numbers for p and q.'};
+      if(v[0].n*v[0].n*v[1].n!==Math.abs(D))return{ok:false};
+      if(!isSqFree(v[1].n))return{ok:false,msg:'That is the right value, but q still has a perfect square inside. Simplify further.'};
+      return{ok:true};
+    },
+    answer:[String(p),String(q)],
+    hint:'Find the largest perfect square (4, 9, 16, 25, 36, …) that divides '+Math.abs(D)+'. Its square root goes outside the radical and what is left stays inside.',
+    explain:'√'+(D<0?Math.abs(D):D)+' = '+(D===0?'0':radH(p,q,false))+(imag?', so √'+intH(D)+' = '+radH(p,q,true):'')+'.'
+  });
+  steps.push(finalStep(S,a,b,
+    (S.type==='rational'||S.type==='double')
+      ?'Compute <span class="m">('+intH(-b)+' ± '+p+') / '+2*a+'</span>. The + gives one solution and the − gives the other. Reduce each fraction.'
+      :'Simplify <span class="m">('+intH(-b)+' ± '+radH(p,q,imag)+') / '+2*a+'</span> into the form below. Reduce so u, v and w share no common factor, and keep w positive.'));
+  return{steps,summary:summaryH(S,a,b)};
+}
+
+/* ---------- Completing the square ---------- */
+function buildSquare(P){
+  const {a,b,c}=P,S=solInfo(a,b,c);
+  const A=I(a),Bp=div(I(b),A),Cp=div(I(c),A),h=div(Bp,I(2)),h2=mul(h,h),R=sub(h2,Cp),rhs=neg(Cp);
+  const steps=[];
+  if(a!==1){
+    steps.push({
+      title:'Divide every term by a',
+      prompt:'Make the '+X+'<sup>2</sup> coefficient 1 by dividing every term of '+polyH(a,b,c)+' = 0 by '+a+'. Enter fractions like 3/2 when needed.',
+      fields:[fld(X+'<sup>2</sup> +','<i class="v">x</i> +','new x coefficient'),fld('','= 0','new constant')],
+      check:exact([Bp,Cp]),answer:[fstr(Bp),fstr(Cp)],
+      hint:'Divide the x-coefficient ('+intH(b)+') by '+a+' and the constant ('+intH(c)+') by '+a+'. Keep the signs.',
+      explain:X+'<sup>2</sup> '+(Bp.n<0?'−':'+')+' '+(eq(absF(Bp),I(1))?'':fh(absF(Bp)))+X+' '+(Cp.n<0?'−':'+')+' '+fh(absF(Cp))+' = 0'
+    });
+  }
+  steps.push({
+    title:'Move the constant to the right side',
+    prompt:'Get the '+X+' terms alone on the left. What is the right side?',
+    fields:[fld(polyH(I(1),Bp,I(0))+' =','','right side')],
+    check:exact([rhs]),answer:[fstr(rhs)],
+    hint:'Add or subtract the constant on both sides. It changes sign when it crosses the equals sign.',
+    explain:polyH(I(1),Bp,I(0))+' = '+fh(rhs)
+  });
+  steps.push({
+    title:'Half of the x-coefficient, squared',
+    prompt:'The x-coefficient is '+fh(Bp)+'. Find half of it, then square that result.',
+    fields:[fld('half =','','half of the x coefficient'),fld('half squared =','','half squared')],
+    check:exact([h,h2]),answer:[fstr(h),fstr(h2)],
+    hint:'Multiply '+fh(Bp)+' by 1/2 first. Then square it. A negative number squared is positive.',
+    explain:'Half of '+fh(Bp)+' is '+fh(h)+', and '+fh(h)+' squared is '+fh(h2)+'.'
+  });
+  steps.push({
+    title:'Add it to both sides',
+    prompt:'Add '+fh(h2)+' to both sides. The left side becomes a perfect square. Enter h with its sign, so (x − 3)<sup>2</sup> means h = −3. Then enter the new right side.',
+    fields:[fld('('+X+' +',')<sup>2</sup> =','h, with its sign'),fld('','','new right side')],
+    check:exact([h,R]),answer:[fstr(h),fstr(R)],
+    hint:'h is the half you just found, with the same sign. The right side is '+fh(rhs)+' + '+fh(h2)+'.',
+    explain:'('+xPlusH(h)+')<sup>2</sup> = '+fh(R)
+  });
+  const imagR=R.n<0,Rabs=absF(R);
+  const g=gcd(S.p,2*a),sv=S.p/g,sw=2*a/g;
+  steps.push({
+    title:'Take the square root of both sides',
+    prompt:'From ('+xPlusH(h)+')<sup>2</sup> = '+fh(R)+', take the square root of both sides: '+xPlusH(h)+' = ±√'+fh(R)+'. Write the right side as <span class="m">± (<i class="v">v</i>√<i class="v">q</i>) / <i class="v">w</i></span> in simplest form, with no radical in the denominator. If it is a perfect square (like 25/4), use q = 1.'+(imagR?' R is negative, so the root includes <i class="v">i</i>.':''),
+    fields:radRow(imagR),
+    check:radFracCheck(Rabs),
+    answer:[String(sv),String(S.q),String(sw)],
+    hint:'Take the square root of the top and the bottom separately. Pull perfect squares out of the radical. For example, √(5/4) = √5 / 2.',
+    explain:xPlusH(h)+' = '+exprH(0,sv,sw,S.q,imagR)
+  });
+  steps.push(finalStep(S,a,b,
+    'Subtract '+fh(absF(h))+(h.n<0?' (add, since h is negative)':'')+' on both sides: <span class="m">'+X+' = '+fh(neg(h))+' ± '+(sw===1?radH(sv,S.q,imagR):'<span class="fr"><span>'+radH(sv,S.q,imagR)+'</span><span>'+sw+'</span></span>')+'</span>. Combine into one simplified answer.'));
+  return{steps,summary:summaryH(S,a,b)};
+}
+
+const MODES={
+  factoring:{
+    name:'Factoring',cap:'(x + m)(x + n) = 0',hash:'factoring',
+    ask:'Solve by factoring',
+    gen:genFactoringProblem,build:buildFactoring,
+    eqH:P=>polyH(P.a,P.b,P.c)+' = 0',
+    levels:['Whole-number roots, a = 1 (sometimes a repeated root)','a is 2 or 3, so you will factor by grouping','Pull out a GCF first, or both a and c are larger']
+  },
+  formula:{
+    name:'Quadratic formula',cap:'x = (−b ± √D) / 2a',hash:'formula',
+    ask:'Solve with the quadratic formula',
+    gen:genFormulaProblem,build:buildFormula,
+    eqH:P=>P.rearr?polyH(P.a,P.b,0)+' = '+intH(-P.c):polyH(P.a,P.b,P.c)+' = 0',
+    levels:['a = 1, whole-number solutions','a is 2 or 3, rational solutions, some equations need rearranging','Irrational and complex solutions, simplify the radical']
+  },
+  square:{
+    name:'Completing the square',cap:'(x + h)² = k',hash:'square',
+    ask:'Solve by completing the square',
+    gen:genSquareProblem,build:buildSquare,
+    eqH:P=>polyH(P.a,P.b,P.c)+' = 0',
+    levels:['a = 1, b is even, whole-number roots','a = 1 with fractions for odd b, and irrational roots','a is greater than 1, so divide first. Irrational and complex roots']
+  }
+};
+/* CORE-END */
+
+/* ================= Site ================= */
+const $=id=>document.getElementById(id);
+const view=$('main'),sideEl=$('side'),menuBtn=$('menu');
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const KEY='csunkara.math.v1';
+let store={attempted:0,firstTry:0,solved:0,missed:[],level:{factoring:1,formula:1,square:1}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object')store=Object.assign(store,s)}catch(e){}
+store.level=Object.assign({factoring:1,formula:1,square:1},store.level||{});
+if(!Array.isArray(store.missed))store.missed=[];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}}
+const pkey=(mode,P)=>mode+':'+JSON.stringify(P);
+function addMissed(mode,P){
+  const k=pkey(mode,P);
+  if(store.missed.some(m=>pkey(m.mode,m.P)===k))return;
+  store.missed.push({mode,P});
+  if(store.missed.length>30)store.missed.shift();
+}
+function removeMissed(mode,P){const k=pkey(mode,P);store.missed=store.missed.filter(m=>pkey(m.mode,m.P)!==k)}
+const pct=()=>store.attempted?Math.round(100*store.firstTry/store.attempted)+'%':'—';
+
+let uid=0;
+/* Render a list of steps into host. Steps open one at a time. */
+function mountSteps(host,steps,opts){
+  opts=opts||{};
+  const id=++uid;
+  const first=steps.map(()=>false),tries=steps.map(()=>0);
+  let anyWrong=false,anyRevealed=false;
+  host.textContent='';
+  const ol=document.createElement('ol');ol.className='steps';host.appendChild(ol);
+  steps.forEach((st,i)=>{
+    const fields=st.fields.map((f,j)=>
+      '<label class="fld'+(f.wide?' wide':'')+'">'+(f.pre?'<span class="pre">'+f.pre+'</span>':'')+
+      '<input class="in" id="f'+id+'-'+i+'-'+j+'" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="'+f.aria+'"'+(f.ph?' placeholder="'+f.ph+'"':'')+'>'+
+      (f.post?'<span class="post">'+f.post+'</span>':'')+'</label>').join('');
+    const li=document.createElement('li');
+    li.className='step'+(i===0?' active':'');li.dataset.i=i;
+    if(i>0)li.hidden=true;
+    li.innerHTML=
+      '<div class="s-head"><span class="badge">'+(i+1)+'</span><h3>'+st.title+'</h3></div>'+
+      '<p class="s-prompt">'+st.prompt+'</p>'+
+      '<div class="fields">'+fields+'</div>'+
+      '<div class="actions"><button type="button" class="btn primary" data-act="check">Check</button><button type="button" class="btn" data-act="hint">Hint</button><button type="button" class="btn" data-act="show">Show answer</button></div>'+
+      '<div class="msg" role="status" aria-live="polite" hidden></div>';
+    ol.appendChild(li);
+  });
+  const inp=(i,j)=>document.getElementById('f'+id+'-'+i+'-'+j);
+  function msg(li,cls,html){const m=li.querySelector('.msg');m.className='msg '+cls;m.innerHTML=html;m.hidden=false}
+  function record(i,correct){
+    if(first[i])return;first[i]=true;
+    store.attempted++;if(correct)store.firstTry++;else anyWrong=true;
+    save();
+    if(opts.onFirst)opts.onFirst(i,correct);
+    if(opts.onProgress)opts.onProgress();
+  }
+  function check(i){
+    const st=steps[i],li=ol.children[i];
+    const raw=st.fields.map((f,j)=>inp(i,j).value);
+    if(raw.every(v=>!v.trim())){msg(li,'bad','Type your answer first.');return}
+    const res=st.check(st.raw?raw:raw.map(parseNum));
+    if(res.ok){record(i,true);done(i,false);return}
+    record(i,false);tries[i]++;
+    let h='Not quite. '+(res.msg||'Check your work, or tap Hint.');
+    if(tries[i]>=2)h+='<br><b>Hint:</b> '+st.hint;
+    msg(li,'bad',h);
+  }
+  function done(i,revealed){
+    const st=steps[i],li=ol.children[i];
+    if(revealed){
+      anyRevealed=true;record(i,false);
+      st.fields.forEach((f,j)=>{inp(i,j).value=st.answer[j]});
+    }
+    li.classList.remove('active');li.classList.add('done');
+    li.querySelector('.badge').textContent='✓';
+    li.querySelectorAll('input').forEach(x=>x.readOnly=true);
+    li.querySelector('.actions').hidden=true;
+    li.querySelector('.msg').hidden=true;
+    const ex=document.createElement('div');ex.className='explain';
+    ex.innerHTML=(revealed?'Answer: ':'Correct. ')+st.explain;li.appendChild(ex);
+    if(i+1<steps.length){
+      const nx=ol.children[i+1];nx.hidden=false;nx.classList.add('active');
+      const f=nx.querySelector('input');if(f)f.focus({preventScroll:true});
+      nx.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'});
+    }else if(opts.onFinish)opts.onFinish({clean:!anyWrong&&!anyRevealed,revealed:anyRevealed});
+  }
+  ol.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-act]');if(!b)return;
+    const li=b.closest('.step'),i=Number(li.dataset.i);
+    if(b.dataset.act==='check')check(i);
+    if(b.dataset.act==='hint')msg(li,'hint','<b>Hint:</b> '+steps[i].hint);
+    if(b.dataset.act==='show')done(i,true);
+  });
+  ol.addEventListener('keydown',e=>{
+    if(e.key!=='Enter'||!e.target.classList.contains('in'))return;
+    const li=e.target.closest('.step');
+    if(li.classList.contains('active')){e.preventDefault();check(Number(li.dataset.i))}
+  });
+  const f0=inp(0,0);
+  if(f0&&opts.focus!==false)try{f0.focus({preventScroll:true})}catch(e){}
+}
+
+/* Board + steps + result box for one full problem */
+function renderProblem(host,mode,P,opts){
+  const M=MODES[mode],B=M.build(P);
+  host.innerHTML=
+    '<div class="board"><p class="ask">'+M.ask+'</p><div class="eq">'+M.eqH(P)+'</div></div>'+
+    '<div class="stepshost"></div><div class="donehost" hidden></div>';
+  const doneH=host.querySelector('.donehost');
+  mountSteps(host.querySelector('.stepshost'),B.steps,{
+    focus:opts.focus,
+    onProgress:()=>{renderNav();if(opts.onProgress)opts.onProgress()},
+    onFinish:({clean,revealed})=>{
+      store.solved++;
+      if(clean)removeMissed(mode,P);else addMissed(mode,P);
+      save();renderNav();if(opts.onProgress)opts.onProgress();
+      doneH.innerHTML='<div class="final"><h3>'+(clean?'Solved':'Solved, with some help')+'</h3><p class="ans">'+B.summary+'</p><p>'+
+        (clean?'Every step was right on the first try.':'This problem is saved under Retry missed so you can try it again later.')+
+        '</p><div class="actions"><button type="button" class="btn primary" id="nextp">'+opts.nextLabel+'</button></div></div>';
+      doneH.hidden=false;
+      const nb=doneH.querySelector('#nextp');nb.addEventListener('click',opts.onNext);
+      nb.focus({preventScroll:true});
+      doneH.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'});
+    }
+  });
+}
+
+/* ---------- navigation ---------- */
+const NAV=[
+  {h:'Your workspace',items:[['overview','Overview'],['quick','Quick checks'],['retry','Retry missed',()=>store.missed.length]]},
+  {h:'Workbook',items:[['factoring','Factoring'],['formula','Quadratic formula'],['square','Completing the square']]},
+  {h:'Reference',items:[['resources','Study resources']]}
+];
+let current='overview';
+function renderNav(){
+  sideEl.innerHTML=NAV.map(g=>'<h2>'+g.h+'</h2>'+g.items.map(it=>{
+    const c=it[2]?it[2]():null;
+    return '<a href="#'+it[0]+'"'+(it[0]===current?' aria-current="page"':'')+'><span>'+it[1]+'</span>'+(c!==null?'<span class="count">'+c+'</span>':'')+'</a>';
+  }).join('')).join('')+'<p class="sidefoot">Progress is saved on this device.<br>Prepared by Mr. Sunkara</p>';
+}
+menuBtn.addEventListener('click',()=>{
+  const open=sideEl.classList.toggle('open');menuBtn.setAttribute('aria-expanded',String(open));
+});
+
+/* ---------- views ---------- */
+const BLURB={
+  factoring:'Find two numbers, factor the trinomial, then use the zero product property.',
+  formula:'Identify a, b and c, find the discriminant, then simplify <span class="m"><i class="v">x</i> = (−<i class="v">b</i> ± √<i class="v">D</i>) / 2<i class="v">a</i></span>.',
+  square:'Move the constant, add half the x-coefficient squared, and take the square root of both sides.'
+};
+function viewOverview(){
+  view.innerHTML=
+    '<p class="ver">Version 1.0 &middot; Updated November 20, 2026</p>'+
+    '<h1>Quadratics Review</h1>'+
+    '<p class="lede">Solve <span class="m"><i class="v">ax</i><sup>2</sup> + <i class="v">bx</i> + <i class="v">c</i> = 0</span> three ways. Practice in short sessions. Every problem is new, and progress is saved on this device.</p>'+
+    '<div class="chips"><span class="chip">(<i class="v">x</i> + <i class="v">m</i>)(<i class="v">x</i> + <i class="v">n</i>) = 0</span><span class="chip"><i class="v">D</i> = <i class="v">b</i><sup>2</sup> − 4<i class="v">ac</i></span><span class="chip">(<i class="v">x</i> + <i class="v">h</i>)<sup>2</sup> = <i class="v">k</i></span></div>'+
+    '<h2 class="sec">Progress at a glance</h2>'+
+    '<div class="tiles"><div class="tile"><b id="t1">'+store.attempted+'</b><span>Steps attempted</span></div><div class="tile"><b id="t2">'+pct()+'</b><span>First-try accuracy</span></div><div class="tile"><b id="t3">'+store.missed.length+'</b><span>Problems to retry</span></div><div class="tile"><b id="t4">'+store.solved+'</b><span>Problems finished</span></div></div>'+
+    '<h2 class="sec">Pick a method</h2>'+
+    '<div class="cards">'+['factoring','formula','square'].map(k=>
+      '<div class="mcard"><h3>'+MODES[k].name+'</h3><p>'+BLURB[k]+'</p><a class="btn primary" href="#'+k+'">Start practice</a></div>').join('')+'</div>'+
+    '<div class="row"><div><b>Not sure where to start?</b><br><span class="count">Five single-step questions from random problems.</span></div><a class="btn" href="#quick">Start a quick check</a></div>';
+}
+function viewPractice(mode){
+  const M=MODES[mode];
+  view.innerHTML='<h1>'+M.name+'</h1><p class="lede">'+BLURB[mode]+'</p>'+
+    '<section class="card"><div class="bar"><div class="levels" id="levels" role="group" aria-label="Difficulty"></div><div class="stats" id="stats"></div></div><p class="lvdesc" id="lvdesc"></p><div id="holder"></div><div class="actions"><button type="button" class="btn" id="newp">New problem</button></div></section>';
+  const levelsEl=$('levels'),stats=$('stats'),desc=$('lvdesc'),holder=$('holder');
+  function renderLevels(){
+    levelsEl.innerHTML=[1,2,3].map(n=>'<button type="button" class="lv" data-level="'+n+'" aria-pressed="'+(store.level[mode]===n)+'">Level '+n+'</button>').join('');
+    desc.textContent=M.levels[store.level[mode]-1];
+  }
+  function renderStats(){stats.textContent='Finished '+store.solved+' · First-try '+pct()}
+  function next(){renderProblem(holder,mode,M.gen(store.level[mode]),{nextLabel:'Next problem',onNext:next,onProgress:renderStats});renderStats()}
+  levelsEl.addEventListener('click',e=>{
+    const b=e.target.closest('.lv');if(!b)return;
+    store.level[mode]=Number(b.dataset.level);save();renderLevels();next();
+  });
+  $('newp').addEventListener('click',next);
+  renderLevels();next();
+}
+const QUICK_OK=/^(Identify a, b and c|Multiply a and c|Find two numbers|Find the discriminant|Fill in|Simplify the square root|Half of|Set each factor)/;
+function viewQuick(){
+  view.innerHTML='<h1>Quick checks</h1><p class="lede">Five single-step questions taken from random problems. Your first try counts toward the score.</p><section class="card" id="qc"></section>';
+  const qc=$('qc'),total=5;
+  let k=0,score=0,answered=false;
+  function ask(){
+    if(k>=total){
+      qc.innerHTML='<p class="ask" style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600">Result</p><p class="score">'+score+' of '+total+' on the first try</p><p class="lede" style="margin:0">'+(score===total?'Perfect. Move on to a harder level in the workbook.':'Pick the method that felt shakiest and practice it in the workbook.')+'</p><div class="actions"><button type="button" class="btn primary" id="qagain">Try another quick check</button><a class="btn" href="#factoring">Go to the workbook</a></div>';
+      $('qagain').addEventListener('click',()=>{k=0;score=0;ask()});
+      return;
+    }
+    const mode=pick(Object.keys(MODES)),P=MODES[mode].gen(ri(1,2)),B=MODES[mode].build(P);
+    const cand=B.steps.map((s,i)=>QUICK_OK.test(s.title)?i:-1).filter(i=>i>=0);
+    const st=B.steps[cand.length?pick(cand):0];
+    answered=false;
+    qc.innerHTML='<div class="stats">Question '+(k+1)+' of '+total+' &middot; Score '+score+'</div><div class="board"><p class="ask">'+MODES[mode].ask+'</p><div class="eq">'+MODES[mode].eqH(P)+'</div></div><div id="qs"></div><div id="qnext" class="actions" hidden><button type="button" class="btn primary" id="qn">'+(k+1===total?'See my score':'Next question')+'</button></div>';
+    mountSteps($('qs'),[st],{
+      onFirst:(i,ok)=>{if(!answered){answered=true;if(ok)score++}},
+      onProgress:renderNav,
+      onFinish:()=>{$('qnext').hidden=false;$('qn').focus({preventScroll:true});$('qn').addEventListener('click',()=>{k++;ask()})}
+    });
+  }
+  ask();
+}
+function viewRetry(){
+  view.innerHTML='<h1>Retry missed</h1><p class="lede">Problems where you needed a hint, a second try or the answer show up here. Solve one cleanly to clear it from the list.</p><div id="rlist" class="cards" style="grid-template-columns:1fr"></div><div id="rwork"></div>';
+  const list=$('rlist'),work=$('rwork');
+  function draw(){
+    work.innerHTML='';
+    if(!store.missed.length){list.innerHTML='<div class="empty">Nothing to retry yet. Missed problems appear here automatically.</div>';return}
+    list.innerHTML=store.missed.map((m,i)=>'<div class="row"><div><small>'+MODES[m.mode].name+'</small><div class="eq">'+MODES[m.mode].eqH(m.P)+'</div></div><button type="button" class="btn primary" data-i="'+i+'">Retry</button></div>').join('');
+  }
+  list.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-i]');if(!b)return;
+    const m=store.missed[Number(b.dataset.i)];if(!m)return;
+    list.innerHTML='';
+    const card=document.createElement('section');card.className='card';work.innerHTML='';work.appendChild(card);
+    renderProblem(card,m.mode,m.P,{nextLabel:'Back to the list',onNext:()=>{draw();renderNav()}});
+    card.scrollIntoView({block:'start',behavior:reduce?'auto':'smooth'});
+  });
+  draw();
+}
+function viewResources(){
+  view.innerHTML='<h1>Study resources</h1><p class="lede">One page to review before you practice.</p>'+
+  '<div class="sheet">'+
+  '<div class="mcard"><h3>Factoring</h3><ol><li>Pull out any GCF first.</li><li>Multiply <i class="v">a</i>·<i class="v">c</i>.</li><li>Find two numbers that multiply to <i class="v">ac</i> and add to <i class="v">b</i>.</li><li>Split the middle term and group, or write <span class="m">(<i class="v">x</i> + <i class="v">m</i>)(<i class="v">x</i> + <i class="v">n</i>)</span> when <i class="v">a</i> = 1.</li><li>Set each factor equal to 0 and solve.</li></ol></div>'+
+  '<div class="mcard"><h3>Quadratic formula</h3><p class="m" style="font-size:1.2rem"><i class="v">x</i> = <span class="fr"><span>−<i class="v">b</i> ± √(<i class="v">b</i><sup>2</sup> − 4<i class="v">ac</i>)</span><span>2<i class="v">a</i></span></span></p><ol><li>Write the equation as <span class="m"><i class="v">ax</i><sup>2</sup> + <i class="v">bx</i> + <i class="v">c</i> = 0</span>.</li><li>Find <i class="v">D</i> = <i class="v">b</i><sup>2</sup> − 4<i class="v">ac</i>.</li><li>Simplify the radical.</li><li>Reduce the fraction.</li></ol></div>'+
+  '<div class="mcard"><h3>Completing the square</h3><ol><li>Divide by <i class="v">a</i> so the <i class="v">x</i><sup>2</sup> coefficient is 1.</li><li>Move the constant to the right.</li><li>Add (<i class="v">b</i>/2)<sup>2</sup> to both sides.</li><li>Write the left side as (<i class="v">x</i> + <i class="v">h</i>)<sup>2</sup>.</li><li>Take the square root of both sides, then solve for <i class="v">x</i>.</li></ol></div>'+
+  '</div>'+
+  '<h2 class="sec">What the discriminant tells you</h2>'+
+  '<div class="scroll"><table class="dt"><thead><tr><th>Value of <i class="v">D</i></th><th>Solutions</th><th>Example</th></tr></thead><tbody><tr><td><i class="v">D</i> &gt; 0, perfect square</td><td>Two rational solutions</td><td><span class="m"><i class="v">x</i><sup>2</sup> − 5<i class="v">x</i> + 6 = 0</span></td></tr><tr><td><i class="v">D</i> &gt; 0, not a perfect square</td><td>Two irrational solutions</td><td><span class="m"><i class="v">x</i><sup>2</sup> + 4<i class="v">x</i> + 1 = 0</span></td></tr><tr><td><i class="v">D</i> = 0</td><td>One repeated solution</td><td><span class="m"><i class="v">x</i><sup>2</sup> + 6<i class="v">x</i> + 9 = 0</span></td></tr><tr><td><i class="v">D</i> &lt; 0</td><td>Two complex solutions</td><td><span class="m"><i class="v">x</i><sup>2</sup> + 2<i class="v">x</i> + 5 = 0</span></td></tr></tbody></table></div>';
+}
+
+/* ---------- router ---------- */
+const ROUTES={overview:viewOverview,quick:viewQuick,retry:viewRetry,resources:viewResources,
+  factoring:()=>viewPractice('factoring'),formula:()=>viewPractice('formula'),square:()=>viewPractice('square')};
+function route(){
+  const h=(location.hash||'').replace('#','');
+  current=ROUTES[h]?h:'overview';
+  renderNav();
+  ROUTES[current]();
+  sideEl.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');
+  window.scrollTo(0,0);
+  document.title=(current==='overview'?'Sunkara Math Review':(NAV.flatMap(g=>g.items).find(i=>i[0]===current)||[0,''])[1]+' | Sunkara Math Review');
+}
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
